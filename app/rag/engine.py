@@ -25,6 +25,7 @@ class RAGEngine:
         self.config = config or Config()
         self.store = None
         self._initialize()
+        self._process_documents()
 
     def _initialize(self):
         """Initialize the components of the RAG engine.
@@ -44,9 +45,10 @@ class RAGEngine:
         self.llm = ChatGroq(
             model=self.config.LLM_MODEL_NAME,
             temperature=self.config.LLM_TEMPERATURE,
+            max_tokens=self.config.LLM_MAX_TOKENS,
         )
 
-    def process_documents(self):
+    def _process_documents(self):
         """Load, chunk, and create a vector store from the input documents."""
         documents = self.loader.load()
         chunked_documents = self.chunker.chunk(documents)

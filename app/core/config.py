@@ -11,5 +11,5 @@ class Config:
     CHUNK_SIZE = 500
     CHUNK_OVERLAP = 50
     TOP_K = 5
-    TEMPERATURE = 0.3
-    MAX_TOKENS = 2048
+    LLM_TEMPERATURE = 0.3
+    LLM_MAX_TOKENS = 2048

@@ -1,7 +1,10 @@
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
+from uuid import uuid4
 from typing import List
+
+uuid = lambda: str(uuid4())
 
 
 class VectorStore:
@@ -25,10 +28,7 @@ class VectorStore:
             texts=texts,
             metadatas=[doc.metadata for doc in documents],
             embedding=self.embedding,
-            ids=[
-                doc.metadata.get("chunk_index", f"chunk_index_{i}")
-                for i, doc in enumerate(documents)
-            ],
+            ids=[uuid() for _ in documents],  # generate unique IDs for each document
         )
 
     def search(self, query: str, top_k: int = 5) -> List[Document]:

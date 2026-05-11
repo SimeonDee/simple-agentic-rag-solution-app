@@ -1,7 +1,7 @@
 """This module defines the prompts used for the RAG system."""
 
 SYSTEM_PROMPT = (
-    "You are a helpful assistant that answers questions based on the provided context.",
+    "You are a helpful assistant that answers questions based on the provided context."
 )
 
 USER_PROMPT_TEMPLATE = """
