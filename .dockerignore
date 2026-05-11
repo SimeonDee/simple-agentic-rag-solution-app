@@ -1,0 +1,12 @@
+.venv/
+.git/
+.env
+__pycache__/
+*.pyc
+vector_store/
+uv.lock
+pyproject.toml
+.python-version
+.DS_Store
+LICENSE
+README.md

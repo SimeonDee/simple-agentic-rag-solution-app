@@ -1,10 +1,28 @@
-from fastapi import FastAPI, Query
+import logging
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+
 from app.rag.engine import RAGEngine
-from typing import List, Optional
+
+logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+)
 
 app = FastAPI()
 
+logger.info("Starting RAG Engine API")
 rag_engine = RAGEngine()
+logger.info("RAG Engine initialized and ready")
+
+
+class QueryRequest(BaseModel):
+    question: str = Field(
+        ..., min_length=1, description="The user question to ask the RAG engine."
+    )
 
 
 @app.get("/")
@@ -17,19 +35,19 @@ async def get_info():
     return {"app": "RAG Engine API", "version": "1.0.0"}
 
 
-@app.get("/query")
-async def query(
-    question: str = Query(..., description="The user question to ask the RAG engine.")
-):
+@app.post("/query")
+async def query(request: QueryRequest):
+    logger.info("Received query: %.100s...", request.question)
     try:
-        answer = rag_engine.generate_answer(question)
+        answer = rag_engine.generate_answer(request.question)
+        logger.info("Query answered successfully")
         return {
-            "question": question,
+            "question": request.question,
             "answer": answer,
         }
-    except Exception as e:
-        return {
-            "question": question,
-            "answer": None,
-            "error": str(e),
-        }
+    except ValueError as e:
+        logger.error("Validation error processing query: %s", e)
+        raise HTTPException(status_code=400, detail="Invalid query or system not ready.")
+    except Exception:
+        logger.exception("Unexpected error generating answer")
+        raise HTTPException(status_code=500, detail="An internal error occurred.")

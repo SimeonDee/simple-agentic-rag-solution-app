@@ -1,6 +1,10 @@
+import logging
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from typing import List
+
+logger = logging.getLogger(__name__)
 
 
 class TextChunker:
@@ -16,6 +20,7 @@ class TextChunker:
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap
         )
+        logger.info("TextChunker initialized (chunk_size=%d, chunk_overlap=%d)", chunk_size, chunk_overlap)
 
     def chunk(self, documents: List[Document]) -> List[Document]:
         """Chunk the input documents into smaller pieces based on the specified chunk size and overlap.
@@ -26,6 +31,7 @@ class TextChunker:
         Returns:
             List[Document]: A list of chunked documents.
         """
+        logger.info("Chunking %d document(s)", len(documents))
         chunked_documents = []
         for doc in documents:
             chunks = self.text_splitter.split_text(doc.page_content)
@@ -34,4 +40,5 @@ class TextChunker:
                     page_content=chunk, metadata={**doc.metadata, "chunk_index": i}
                 )
                 chunked_documents.append(chunked_doc)
+        logger.info("Produced %d chunk(s) from %d document(s)", len(chunked_documents), len(documents))
         return chunked_documents

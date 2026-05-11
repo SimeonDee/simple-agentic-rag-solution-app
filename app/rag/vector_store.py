@@ -1,10 +1,16 @@
+import logging
+
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from uuid import uuid4
 from typing import List
 
-uuid = lambda: str(uuid4())
+logger = logging.getLogger(__name__)
+
+
+def _generate_id() -> str:
+    return str(uuid4())
 
 
 class VectorStore:
@@ -23,13 +29,15 @@ class VectorStore:
         Args:
             documents (List[Document]): A list of documents to be added to the vector store.
         """
+        logger.info("Creating FAISS vector store from %d document(s)", len(documents))
         texts = [doc.page_content for doc in documents]
         self.store: FAISS = FAISS.from_texts(
             texts=texts,
             metadatas=[doc.metadata for doc in documents],
             embedding=self.embedding,
-            ids=[uuid() for _ in documents],  # generate unique IDs for each document
+            ids=[_generate_id() for _ in documents],
         )
+        logger.info("FAISS vector store created with %d entries", len(documents))
 
     def search(self, query: str, top_k: int = 5) -> List[Document]:
         """Search the vector store for relevant documents based on the input query.
@@ -41,7 +49,11 @@ class VectorStore:
             List[Document]: A list of the top_k most relevant documents from the vector store.
         """
         if self.store is None:
+            logger.error("Search attempted before vector store was created")
             raise ValueError(
                 "Vector store has not been created. Please create the vector store before searching."
             )
-        return self.store.similarity_search(query, k=top_k, return_metadata=True)
+        logger.info("Searching vector store (top_k=%d)", top_k)
+        results = self.store.similarity_search(query, k=top_k, return_metadata=True)
+        logger.info("Found %d result(s)", len(results))
+        return results
