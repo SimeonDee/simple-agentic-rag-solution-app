@@ -46,8 +46,10 @@ async def query(request: QueryRequest):
             "answer": answer,
         }
     except ValueError as e:
-        logger.error("Validation error processing query: %s", e)
-        raise HTTPException(status_code=400, detail="Invalid query or system not ready.")
-    except Exception:
-        logger.exception("Unexpected error generating answer")
+        logger.error(f"Validation error processing query: {e}")
+        raise HTTPException(
+            status_code=400, detail="Invalid query or system not ready."
+        )
+    except Exception as e:
+        logger.exception(f"Unexpected error generating answer: {e}")
         raise HTTPException(status_code=500, detail="An internal error occurred.")

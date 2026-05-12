@@ -13,6 +13,7 @@ A simple agentic Retrieval-Augmented Generation (RAG) application that answers q
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [API Endpoints](#api-endpoints)
+- [Docker](#docker)
 - [License](#license)
 
 ## Features
@@ -62,13 +63,14 @@ PDF Documents
 
 ```
 simple-agentic-rag-solution-app/
-├── main.py                  # Application entry point
+├── Dockerfile               # Container image definition
 ├── requirements.txt         # pip-compatible dependency list
 ├── pyproject.toml           # Project metadata and uv dependencies
 ├── data/                    # PDF documents for ingestion
 ├── vector_store/            # Persisted FAISS index (generated)
 └── app/
-    ├── api/                 # API route handlers
+    ├── api/
+    │   └── main.py          # FastAPI application entry point
     ├── core/
     │   └── config.py        # Centralised configuration
     ├── models/              # Pydantic request/response models
@@ -133,12 +135,55 @@ Default model and chunking settings can be adjusted in [app/core/config.py](app/
 2. **Run the application**
 
    ```bash
-   uvicorn main:app --reload
+   uvicorn app.api.main:app --reload
    ```
 
    The API will be available at `http://localhost:8000`.
 
 3. **Interactive docs** — Visit `http://localhost:8000/docs` for the Swagger UI.
+
+## API Endpoints
+
+| Method | Path     | Description                        |
+| ------ | -------- | ---------------------------------- |
+| GET    | `/`      | Health check                       |
+| GET    | `/info`  | Application name and version       |
+| POST   | `/query` | Submit a question to the RAG engine|
+
+### POST `/query`
+
+**Request body:**
+
+```json
+{
+  "question": "What does the document say about X?"
+}
+```
+
+**Response:**
+
+```json
+{
+  "question": "What does the document say about X?",
+  "answer": "Based on the documents, ..."
+}
+```
+
+## Docker
+
+1. **Build the image**
+
+   ```bash
+   docker build -t simple-agentic-rag .
+   ```
+
+2. **Run the container**
+
+   ```bash
+   docker run -p 8000:8000 --env-file .env simple-agentic-rag
+   ```
+
+   The API will be available at `http://localhost:8000`.
 
 ## License
 
