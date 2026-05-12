@@ -1,6 +1,6 @@
 .venv/
 .git/
-.env
+# .env
 __pycache__/
 *.pyc
 vector_store/

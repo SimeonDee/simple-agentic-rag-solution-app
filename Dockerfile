@@ -1,31 +1,19 @@
-FROM python:3.12-alpine
-
-# # Build dependencies for native packages (faiss-cpu, numpy, torch, etc.)
-# RUN apk add --no-cache \
-#     build-base \
-#     gfortran \
-#     openblas-dev \
-#     libffi-dev \
-#     cmake
+FROM python:3.12-slim
 
 WORKDIR /app
 
+# Install CPU-only PyTorch first (much smaller download), then remaining deps
+COPY requirements.txt .
+RUN pip install --no-cache-dir "torch<2.3" --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
+
 # Copy application code
-COPY .env .env
 COPY app/ ./app/
 COPY data/ ./data/
-COPY requirements.txt .
+COPY .env ./.env
 
-# Install dependencies first for better layer caching
-RUN pip install --no-cache-dir -r requirements.txt
-
-
-# # Required environment variables (pass via docker run --env-file or -e)
-# ENV GROQ_API_KEY=""
-# ENV HUGGINGFACEHUB_ACCESS_TOKEN=""
-
-# Run as non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# Run as non-root user (with home dir for HuggingFace model cache)
+RUN groupadd -r appgroup && useradd -r -g appgroup -m appuser
 USER appuser
 
 EXPOSE 8000
